@@ -55,7 +55,7 @@ pi@localhost: sudo service smbd restart
 ```
 
 ### Measuring the Temperature of Raspberry Pi 
-pi@localhost: vcgencmd measure_temp
+```pi@localhost: vcgencmd measure_temp```
 
 temp=38.6C
 
