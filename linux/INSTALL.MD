@@ -4,6 +4,7 @@ Raspberry Pi 4B 4GB Starter Kit met heatsink case
 https://www.bol.com/nl/p/raspberry-pi-4b-4gb-starter-kit-met-heatsink-case/9200000121607543/
 
 I replaced the slow 16 SD card by a fast 32GB
+https://www.bol.com/nl/p/sandisk-ultra-micro-sdhc-32gb-uhs1-a1-met-adapter/9200000080737253 writes 4MB/s on the Pi
 
 Install NOOBS pretty straightforward. The install will use 7GB of the SDCard.
 * during installation, Pi will ask you to set the password for default user ```pi```:
