@@ -25,7 +25,7 @@ Remove monitor, keyboard and mouse from the Pi computer
 Setup Remote File Access
 ```
 pi@localhost: sudo apt-get update && sudo apt-get upgrade -y
-pi@localhost: sudo apt-get install samba samba-common-bin -y```
+pi@localhost: sudo apt-get install samba samba-common-bin -y
 
 pi@localhost: sudo rm /etc/samba/smb.conf
 pi@localhost: sudo vi /etc/samba/smb.conf
