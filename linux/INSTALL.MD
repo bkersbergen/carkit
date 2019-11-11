@@ -1,4 +1,4 @@
-### Raspberry Pi Operating System Set up
+## Raspberry Pi: Install Operating System
 
 Raspberry Pi 4B 4GB Starter Kit met heatsink case
 https://www.bol.com/nl/p/raspberry-pi-4b-4gb-starter-kit-met-heatsink-case/9200000121607543/
@@ -6,12 +6,13 @@ https://www.bol.com/nl/p/raspberry-pi-4b-4gb-starter-kit-met-heatsink-case/92000
 I replaced the slow 16 SD card by a fast 32GB
 https://www.bol.com/nl/p/sandisk-ultra-micro-sdhc-32gb-uhs1-a1-met-adapter/9200000080737253 writes 4MB/s on the Pi
 
-Install NOOBS pretty straightforward. The install will use 7GB of the SDCard.
+### Install NOOBS raspberry PI is pretty straightforward. 
+The install will use 7GB of the SDCard.
 * during installation, Pi will ask you to set the password for default user ```pi```:
 * after installation it will download and install OS updates.
 * ```ifconfig``` will tell you the IP of your Pi 
 
-Setup Remote Access 
+### Setup Remote Access 
 run  ```sudo raspi-config```  
 * enable ssh-server: Interfacing-options -> ssh -> enable
 * enable VNC-server: Interfacing-options -> vnc -> enable
@@ -23,7 +24,7 @@ Change the background image on the Pi to a single color so remote access will be
 
 Remove monitor, keyboard and mouse from the Pi computer
 
-Setup Remote File Access
+### Setup Windows Remote File Access 
 ```
 pi@localhost: sudo apt-get update && sudo apt-get upgrade -y
 pi@localhost: sudo apt-get install samba samba-common-bin -y
@@ -53,4 +54,22 @@ Added user pi.
 pi@localhost: sudo service smbd restart
 ```
 
+### Measuring the Temperature of Raspberry Pi 
+pi@localhost: vcgencmd measure_temp
+
+temp=38.6C
+
+### Modifications to my bashrc
+```
+pi@localhost: sudo vi ~/.bashrc
+... 
+# note: `sudo ls` runs `ls` command in administrator mode
+# route all calls to python (version 2) to python3,
+# pip (version 2) to pip3, even in sudo mode
+# print CPU temperature on console
+alias sudo='sudo '
+alias python=python3
+alias pip=pip3
+vcgencmd measure_temp
+ 
 
