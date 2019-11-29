@@ -2,13 +2,12 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
-
+import tensorflow as tf
 from src.server.utils import INPUT_SHAPE, batch_generator
 import argparse
 import os
 
 np.random.seed(0)
-
 
 def load_data(args):
     """
@@ -19,7 +18,6 @@ def load_data(args):
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values
 
-    #now we can split the data into a training (80), testing(20), and validation set
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=0)
     return X_train, X_valid, y_train, y_valid
 
@@ -33,6 +31,9 @@ def s2b(s):
 
 
 def create_model(args):
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+    sess = tf.compat.v1.Session(config=config)
     model = keras.Sequential()
     model.add(keras.layers.Lambda(lambda x: x / 127.5 - 1.0, input_shape=INPUT_SHAPE))
     model.add(keras.layers.Conv2D(24, kernel_size=5, activation='elu', strides=(2, 2)))
@@ -85,7 +86,7 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
                         validation_steps=400,
                         callbacks=[checkpoint, tensorboard_callback],
                         verbose=1)
-    model.save('my_model', save_format='tf')
+    model.save('final_model', save_format='tf')
 
 
 if __name__ == '__main__':
