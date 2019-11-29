@@ -24,43 +24,13 @@ Change the background image on the Pi to a single color so remote access will be
 
 Remove monitor, keyboard and mouse from the Pi computer
 
-### Setup Windows Remote File Access 
-```
-pi@localhost: sudo apt-get update && sudo apt-get upgrade -y
-pi@localhost: sudo apt-get install samba samba-common-bin -y
-
-pi@localhost: sudo rm /etc/samba/smb.conf
-pi@localhost: sudo vi /etc/samba/smb.conf
-
-[global]
-netbios name = pi4
-server string = The fs of Pi4
-workgroup = WORKGROUP
-
-[HOMEPI]
-path = /home/pi
-comment = pi home directory
-browsable = yes
-writable = Yes
-create mask = 0777
-directory mask = 0777
-public = no
-
-pi@localhost: sudo smbpasswd -a pi
-New SMB password:
-Retype new SMB password:
-Added user pi.
-
-pi@localhost: sudo service smbd restart
-```
-
 ### Measuring the Temperature of Raspberry Pi 
 ```pi@localhost: vcgencmd measure_temp```
 
 temp=38.6C
 
 ### Modifications to my bashrc
-```
+```bash
 pi@localhost: sudo vi ~/.bashrc
 ... 
 # note: `sudo ls` runs `ls` command in administrator mode
@@ -73,3 +43,22 @@ alias pip=pip3
 vcgencmd measure_temp
  
 
+usb webcam
+Apparently most raspberry pi software assumes the webcam is connected 
+via the header on the rpi board.
+```bash
+pi@raspberrypi:~ $ vcgencmd get_camera
+supported=0 detected=0
+
+pi@raspberrypi:~ $ lsusb
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 003: ID 1908:2311 GEMBIRD 
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+pi@raspberrypi:~ $ sudo apt-get install fswebcam
+```
+```bash
+fswebcam /tmp/a.jpg
+```
