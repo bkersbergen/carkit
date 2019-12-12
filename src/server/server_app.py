@@ -9,19 +9,31 @@ from flask import Flask
 import socketio
 import json
 import os
+from datetime import datetime
+from PIL import Image
+import base64
+from io import BytesIO
+import numpy as np
 
 sio = socketio.Server(logger=True, async_mode=async_mode, binary=True)
 app = Flask(__name__)
 app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
 app.config['SECRET_KEY'] = '7jijasdof!9nasd!f!'
 thread = None
+store_captured_images = True
 
 
-@sio.on('context_update')
-def handle_context_update_from_client(sid, msg):
-    image_data = msg['image']
-    print('Received message: ', image_data)
-    sio.emit('action_update', {'action': 'l'})
+@sio.on('telemetry')
+def handle_telemetry(sid, data):
+    steering_angle = float(data["steering_angle"])
+    throttle = float(data["throttle"])
+    speed = float(data["speed"])
+    pil_image = Image.open(BytesIO(base64.b64decode(data["image"])))
+    if store_captured_images:
+        timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
+        image_filename = os.path.join('imgs', timestamp)
+        pil_image.save('{}.jpg'.format(image_filename))
+    sio.emit('steer', data={'steering_angle': -1, 'throttle': 1, }, skip_sid=True)
 
 
 if __name__ == '__main__':

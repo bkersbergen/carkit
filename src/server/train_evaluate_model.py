@@ -10,24 +10,42 @@ import os
 np.random.seed(0)
 
 def load_data(args):
-    """
-    Load training data and split it into training and validation set
-    """
     data_df = pd.read_csv(os.path.join(os.getcwd(), args.data_dir, 'driving_log.csv'), names=['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed'])
 
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values
 
-    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=0)
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=42)
     return X_train, X_valid, y_train, y_valid
 
-#for command line args
 def s2b(s):
-    """
-    Converts a string to boolean value
-    """
     s = s.lower()
     return s == 'true' or s == 'yes' or s == 'y' or s == '1'
+
+def create_model_functional(args):
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+    tf.compat.v1.Session(config=config)
+    i = keras.layers.Input(shape=INPUT_SHAPE)
+    x = keras.layers.Lambda(lambda x: x / 127.5 - 1.0)(i)
+    x = keras.layers.Conv2D(24, kernel_size=5, activation='elu', strides=(2, 2))(x)
+    x = keras.layers.Conv2D(36, kernel_size=5, activation='elu', strides=(2, 2))(x)
+    x = keras.layers.Conv2D(48, kernel_size=5, activation='elu', strides=(2, 2))(x)
+    x = keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
+    x = keras.layers.Dropout(args.keep_prob)(x)
+    x = keras.layers.Conv2D(64, kernel_size=3, activation='elu')(x)
+    x = keras.layers.Conv2D(64, kernel_size=3, activation='elu')(x)
+    x = keras.layers.Dropout(args.keep_prob)(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(100, activation='elu')(x)
+    x = keras.layers.Dropout(args.keep_prob)(x)
+    x = keras.layers.Dense(50, activation='elu')(x)
+    x = keras.layers.Dropout(args.keep_prob)(x)
+    x = keras.layers.Dense(10, activation='elu')(x)
+    x = keras.layers.Dense(1)(x)
+    model = keras.Model(i, x)
+    model.summary()
+    return model
 
 
 def create_model(args):
@@ -57,16 +75,6 @@ def create_model(args):
 
 
 def train_model(model, args, X_train, X_valid, y_train, y_valid):
-    """
-        Train the model
-        """
-    # Saves the model after every epoch.
-    # quantity to monitor, verbosity i.e logging mode (0 or 1),
-    # if save_best_only is true the latest best model according to the quantity monitored will not be overwritten.
-    # mode: one of {auto, min, max}. If save_best_only=True, the decision to overwrite the current save file is
-    # made based on either the maximization or the minimization of the monitored quantity. For val_acc,
-    # this should be max, for val_loss this should be min, etc. In auto mode, the direction is automatically
-    # inferred from the name of the monitored quantity.
     checkpoint = keras.callbacks.ModelCheckpoint('model-{epoch:03d}.h5',
                                  monitor='val_loss',
                                  verbose=0,
@@ -75,12 +83,6 @@ def train_model(model, args, X_train, X_valid, y_train, y_valid):
     early_stopping_callback = keras.callbacks.EarlyStopping(monitor='val_loss')
     tensorboard_callback = keras.callbacks.TensorBoard(log_dir='logdir')
 
-    # calculate the difference between expected steering angle and actual steering angle
-    # square the difference
-    # add up all those differences for as many data points as we have
-    # divide by the number of them
-    # that value is our mean squared error! this is what we want to minimize via
-    # gradient descent
     model.compile(loss='mean_squared_error', optimizer=keras.optimizers.Adam(lr=args.learning_rate), metrics=['mse'])
 
     model.fit_generator(batch_generator(args.data_dir, X_train, y_train, args.batch_size, True),
@@ -115,5 +117,5 @@ if __name__ == '__main__':
     print('-' * 30)
 
     data = load_data(args)
-    model = create_model(args)
+    model = create_model_functional(args)
     train_model(model, args, *data)
