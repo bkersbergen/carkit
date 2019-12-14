@@ -7,11 +7,10 @@ class KeyboardIO(object):
     def __init__(self):
         self._keyboard_events = deque(maxlen=2)
         self._scan_code_mapping = {72: 'UP', 80: 'DOWN', 75: 'LEFT', 77: 'RIGHT'}
-        self._throttle_events = set(['UP', 'DOWN'])
-        self._steering_events = set(['LEFT', 'RIGHT'])
-        self._steering_angle = 90
-        self._throttle = 0
-        self.enable_keyboard_listener()
+        self._throttle_events = {'UP': 100, 'DOWN': -100}
+        self._steering_events = {'LEFT': -100, 'RIGHT': 100}
+        keyboard.hook(self.__handle_keyboard_event)
+        # keyboard.unhook(self.__handle_keyboard_event)  # removes the hook
 
     def get_throttle_and_steering(self):
         event1 = None
@@ -21,38 +20,22 @@ class KeyboardIO(object):
             event2 = self._keyboard_events[0]
         except IndexError:
             pass
+        throttle = None
+        steering = None
         if not event1:
-            return self._throttle, self._steering_angle
+            return throttle, steering
         if event1 in self._throttle_events:
-            if event1 == 'UP':
-                self._throttle = self._throttle + 15
-            else:
-                self._throttle = self._throttle - 15
+            throttle = self._throttle_events.get(event1)
         if event1 in self._throttle_events and event2 and event2 in self._steering_events:
-            if event2 == 'LEFT':
-                self._steering_angle = self._steering_angle - 5
-            else:
-                self._steering_angle = self._steering_angle + 5
+            steering = self._steering_events.get(event2)
         if event1 in self._steering_events:
-            if event1 == 'LEFT':
-                self._steering_angle = self._steering_angle - 5
-            else:
-                self._steering_angle = self._steering_angle + 5
+            steering = self._steering_events.get(event1)
         if event1 in self._steering_events and event2 and event2 not in self._steering_events:
-            if event1 == 'UP':
-                self._throttle = self._throttle + 15
-            else:
-                self._throttle = self._throttle - 15
-        return self._throttle, self._steering_angle
+            throttle = self._throttle_events.get(event2)
+        return throttle, steering
 
     def __handle_keyboard_event(self, event):
         action = self._scan_code_mapping.get(event.scan_code)
         if action:
             self._keyboard_events.append(action)
-
-    def enable_keyboard_listener(self):
-        keyboard.hook(self.__handle_keyboard_event)
-
-    def disable_keyboard_listener(self):
-        keyboard.unhook(self.__handle_keyboard_event)
 

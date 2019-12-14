@@ -15,6 +15,8 @@ import base64
 from io import BytesIO
 import numpy as np
 
+from src.server.io import KeyboardIO
+
 sio = socketio.Server(logger=True, async_mode=async_mode, binary=True)
 app = Flask(__name__)
 app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
@@ -22,18 +24,21 @@ app.config['SECRET_KEY'] = '7jijasdof!9nasd!f!'
 thread = None
 store_captured_images = True
 
+my_keyboard_io = KeyboardIO()
 
 @sio.on('telemetry')
 def handle_telemetry(sid, data):
-    steering_angle = float(data["steering_angle"])
-    throttle = float(data["throttle"])
-    speed = float(data["speed"])
+    global my_keyboard_io
+    car_steering_angle = float(data["_steering_angle"])
+    car_throttle = float(data["_throttle"])
+    car_speed = float(data["speed"])
     pil_image = Image.open(BytesIO(base64.b64decode(data["image"])))
     if store_captured_images:
         timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
         image_filename = os.path.join('imgs', timestamp)
         pil_image.save('{}.jpg'.format(image_filename))
-    sio.emit('steer', data={'steering_angle': -1, 'throttle': 1, }, skip_sid=True)
+    kb_throttle, kb_steering = my_keyboard_io.get_throttle_and_steering()
+    sio.emit('steer', data={'_steering_angle': kb_steering, '_throttle': kb_throttle, })
 
 
 if __name__ == '__main__':
