@@ -34,9 +34,11 @@ def handle_telemetry(sid, data):
     car_speed = float(data["speed"])
     pil_image = Image.open(BytesIO(base64.b64decode(data["image"])))
     if store_captured_images:
+        image_location = 'imgs'
+        if not os.path.exists(image_location):
+            os.makedirs(image_location)
         timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
-        image_filename = os.path.join('imgs', timestamp)
-        pil_image.save('{}.jpg'.format(image_filename))
+        pil_image.save('{}.jpg'.format(os.path.join(image_location, timestamp)))
     kb_throttle, kb_steering = my_keyboard_io.get_throttle_and_steering()
     sio.emit('steer', data={'_steering_angle': kb_steering, '_throttle': kb_throttle, })
 

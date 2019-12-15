@@ -8,7 +8,7 @@ from picar import front_wheels, back_wheels
 
 import picar
 
-bw = back_wheels.Back_Wheels()
+bw = back_wheels.Back_Wheels(debug=True)
 fw = front_wheels.Front_Wheels(debug=True)
 picar.setup()
 bw.speed = 0
@@ -38,13 +38,19 @@ def connect():
 
 @sio.on('disconnect')
 def disconnect():
-    print('Client disconnected')
+    print('Client disconnected, stopping car')
+    global picar, fw, bw
+    bw.speed = 0
+    bw.forward()
+    fw.turn_straight()
+    picar.setup()
 
 
 @sio.on('steer')
 def handle_steer(msg):
     global start_timer
     global bw
+    global fw
     latency = time.time() - start_timer
     print('latency is {0:.2f} ms'.format(latency * 1000))
     # Set speed content, and speed level content
@@ -59,14 +65,12 @@ def handle_steer(msg):
     SPEED = [0, SPEED_LEVEL_1, SPEED_LEVEL_2, SPEED_LEVEL_3, SPEED_LEVEL_4, SPEED_LEVEL_5]
     # start handle throttle
     if msg['_throttle']:
-        throttle = msg['_throttle'] // 4
-    else:
-        throttle = 0
-    bw.speed = abs(throttle)
-    if throttle < 0:
-        bw.backward()
-    else:
-        bw.forward()
+        throttle = msg['_throttle']
+        bw.speed = abs(throttle)
+        if throttle > 0:  # did I mount the servo's in the car in opposite direction?
+            bw.backward()
+        else:
+            bw.forward()
     # end handle throttle
     # start handle steering
     if msg['_steering_angle']:
@@ -74,8 +78,8 @@ def handle_steer(msg):
             fw.turn_right()
         elif msg['_steering_angle'] < 0:
             fw.turn_left()
-    else:
-        fw.turn_straight()
+    # else:
+    #     fw.turn_straight()
     # end handle steering
 
 
