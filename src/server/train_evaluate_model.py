@@ -10,7 +10,7 @@ import os
 np.random.seed(0)
 
 def load_data(args):
-    data_df = pd.read_csv(os.path.join(os.getcwd(), args.data_dir, 'driving_log.csv'), names=['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed'])
+    data_df = pd.read_csv(os.path.join(os.getcwd(), args.data_dir, 'driving_log.csv'), names=['center', 'left', 'right', 'steering', '_throttle', 'reverse', 'speed'])
 
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values

@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
 app.config['SECRET_KEY'] = '7jijasdof!9nasd!f!'
 thread = None
-store_captured_images = True
+store_captured_images = False
 
 my_keyboard_io = KeyboardIO()
 
@@ -40,7 +40,9 @@ def handle_telemetry(sid, data):
         timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
         pil_image.save('{}.jpg'.format(os.path.join(image_location, timestamp)))
     kb_throttle, kb_steering = my_keyboard_io.get_throttle_and_steering()
-    sio.emit('steer', data={'_steering_angle': kb_steering, '_throttle': kb_throttle, })
+    speed = car_speed + (kb_throttle or 0)
+    angle = car_steering_angle + (kb_steering or 0)
+    sio.emit('steer', data={'_steering_angle': angle, '_speed': speed, })
 
 
 if __name__ == '__main__':

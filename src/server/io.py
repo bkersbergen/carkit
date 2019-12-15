@@ -7,8 +7,8 @@ class KeyboardIO(object):
     def __init__(self):
         self._keyboard_events = deque(maxlen=2)
         self._scan_code_mapping = {72: 'UP', 80: 'DOWN', 75: 'LEFT', 77: 'RIGHT'}
-        self._throttle_events = {'UP': 100, 'DOWN': -100}
-        self._steering_events = {'LEFT': -100, 'RIGHT': 100}
+        self._throttle_events = {'UP': 10, 'DOWN': -10}  # steps up or down
+        self._steering_events = {'LEFT': -15, 'RIGHT': 15}  # angle to left or right
         keyboard.hook(self.__handle_keyboard_event)
         # keyboard.unhook(self.__handle_keyboard_event)  # removes the hook
 

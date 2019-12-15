@@ -2,7 +2,6 @@ import cv2
 
 class CarCam(object):
     def __init__(self):
-        print(self.)
         self.camera = cv2.VideoCapture(-1)
         # my camera only works with CV2 in this resolution
         self.camera.set(3, 480)
